@@ -7,7 +7,7 @@ Executes cypher QL in python and stores the Graph data in Redis DB
 
 Still in development
 
-### Requires Redis-server installed in the system
+### **Requires Redis-server installed in the system**
 
 ```
 $ git https://github.com/R3DDY97/redis-cypher
@@ -31,7 +31,8 @@ $ cd src/parsers && ipython3 || python3
     ```
 
 
-- ToDo:-
 
-    * Make it pip package in the end
-    * Finish Implementing  basic cypher cluases
+### ToDo:-
+
+    *  Make it pip package in the end
+    *  Finish Implementing  basic cypher cluases
