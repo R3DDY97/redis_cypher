@@ -32,7 +32,6 @@ $ cd src/parsers && ipython3 || python3
 
 
 
-### ToDo:-
-
-    *  Make it pip package in the end
-    *  Finish Implementing  basic cypher cluases
+*  ToDo:-
+- Make it pip package in the end
+- Finish Implementing  basic cypher cluases
