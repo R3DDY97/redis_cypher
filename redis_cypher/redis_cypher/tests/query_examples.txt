@@ -1,0 +1,71 @@
+GRAPH.QUERY friends "CREATE (adam:User {name: 'Adam', age: 20}), (pernilla:User {name: 'Pernilla', age: 22}), (david:User {name: 'David', age: 24}), (adam)-[:FRIEND]->(pernilla), (pernilla)-[:FRIEND]->(david)"
+
+=============**match**
+
+GRAPH.QUERY friends "MATCH (a) RETURN a.name"
+
+GRAPH.QUERY friends "MATCH (user:User {name: 'Adam'})-[r1:FRIEND]->()-[r2:FRIEND]->(friend_of_a_friend) RETURN friend_of_a_friend.name AS fofName"
+
+==============**where**
+
+GRAPH.QUERY friends "MATCH (a:User) WHERE a.name ='Adam' RETURN a.age"
+
+============= **order by**
+
+GRAPH.QUERY friends "MATCH (a:User)  RETURN a.age ORDER BY a.age"
+
+=============**SET**
+
+GRAPH.QUERY friends "MATCH (n { name: 'Adam' }) SET n.name = 'Bob'"
+
+GRAPH.QUERY friends "MATCH (a:User) WHERE a.name ='Bob' RETURN a.age"
+
+=============**delete**
+
+GRAPH.QUERY friends "MATCH (p:person {name:'Adam'}) DELETE p"
+
+GRAPH.QUERY friends "MATCH (a:User) RETURN a.name"
+
+==============**arithmetic**
+
+GRAPH.QUERY friends "CREATE (adam:User {name: 'Adam', age: 20}), (pernilla:User {name: 'Pernilla', age: 22}), (david:User {name: 'David', age: 24})"
+
+GRAPH.QUERY friends "MATCH (p) RETURN avg(p.age)"
+
+GRAPH.QUERY friends "MATCH (p) RETURN count(p)"
+
+GRAPH.QUERY friends "MATCH (p) RETURN max(p.age)"
+
+GRAPH.QUERY friends "MATCH (p) RETURN min(p.age)"
+
+GRAPH.QUERY friends "MATCH (p) RETURN sum(p.age)"
+
+==============**mathematical**
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN abs(avg(p.age) - 34)"
+
+GRAPH.QUERY friends "CREATE (adam:User {name: 'Adam', age: 20.5}), (pernilla:User {name: 'Pernilla', age: 22.7}), (david:User {name: 'David', age: 24.3})"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN ceil(p.age)"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN floor(p.age)"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN round(p.age)"
+
+===============**string**
+
+GRAPH.QUERY friends "CREATE (adam:User {name: '    David    ', age: 32})"
+
+GRAPH.QUERY friends "MATCH (p:User{age : 32}) RETURN lTrim(p.name, 3)"
+
+GRAPH.QUERY friends "MATCH (p:User{age : 32}) RETURN rTrim(p.name, 3)"
+
+GRAPH.QUERY friends "MATCH (p:User{age : 32}) RETURN trim(p.name, 3)"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN toLower(lTrim(p.name))"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN toUpper(trim(p.name))"
+
+GRAPH.QUERY friends "MATCH (p:User{age : 32}) RETURN toString(p.age)"
+
+GRAPH.QUERY friends "MATCH (p:User) RETURN reverse(toUpper(trim(p.name)))"

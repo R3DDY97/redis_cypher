@@ -2,6 +2,7 @@
 
 # import os
 # import collections
+import json
 import redis
 
 R3DIS = redis.StrictRedis()
@@ -51,18 +52,35 @@ def add_entities(entity_list):
     for entity in entity_list:
         entity_id, mapping = entity
         R3DIS.hmset(name=entity_id, mapping=mapping)
-        if "label" in mapping:
+        R3DIS.set(mapping["id"], mapping)
+        if "node" in entity_id:
+            R3DIS.sadd("node_ids", mapping["id"])
             R3DIS.sadd("labels", mapping["label"])
+            R3DIS.sadd(mapping["label"], mapping)
+            # R3DIS.set(mapping["id"], mapping)
         else:
-            R3DIS.sadd(mapping["type"])
+            R3DIS.sadd("relation_ids", mapping["id"])
+            R3DIS.sadd("type", mapping["type"])
+            R3DIS.sadd(mapping["type"], mapping)
+            # R3DIS.set(mapping["id"], mapping)
     R3DIS.save()
 
 
 def get_allnodes():
-    cursor, byte_nodes = R3DIS.scan(cursor=0, match="node*")
-    node_keys = bytes2str(byte_nodes)
-    nodes = {node: bytes2str(R3DIS.hgetall(node)) for node in node_keys}
-    return nodes
+    cursor, node_names = R3DIS.scan(match="node:*")
+    while cursor != 0:
+        cursor, nodes = R3DIS.scan(cursor=cursor, match="node:*")
+        node_names.extend(nodes)
+
+    byte_nodes = [R3DIS.hgetall(i) for i in node_names]
+    attr_nodes = [{k.decode(): v.decode() for k, v in b.items()} for b in byte_nodes]
+    return attr_nodes
+
+
+def attribute_nodes(attr):
+    str_nodes = [i.replace(b"'", b'"').decode() for i in R3DIS.smembers(attr)]
+    node_list = [json.loads(node) for node in str_nodes]
+    return node_list
 
 
 def bytes2str(byte_group):
@@ -93,4 +111,12 @@ def update_node_adjacancy(node_data):
 
 
 def update_relation_adjcancy(relation_data):
+    pass
+
+
+def update_labels(label):
+    pass
+
+
+def update_rtypes(rtype):
     pass
