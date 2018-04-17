@@ -3,10 +3,12 @@
 
 # import os
 
-import parser_utils
+# import parser_utils
 import re_utils
 import redis_db
+import create_clause
 import match_clause
+import return_clause
 # import filter_utils
 
 
@@ -27,29 +29,19 @@ def evaluate_cypher(query):
     # first_clause, first_pattern = clauses_query.pop(0)
     # if first_clause == "CREATE":
     #     clauses_dict[first_clause](first_pattern)
-    output = None
     for c, q in clauses_query:
         if c == "CREATE":
             eval_create(q)
-        else:
-            output = clauses_dict[c](q, output)
-    print(output)
-    return output
+        if c == "MATCH":
+            sub_graph = eval_match(q)
+        if c == "RETURN":
+            eval_return(q, sub_graph)
 
 
-def eval_create(clause_query):
-    query_nodes, query_relations = re_utils.regex_entities(clause_query)
-    nodes_list = parser_utils.parse_nodes(query_nodes)
-    node_ids = set([node[1]["id"] for node in nodes_list])
-    NODE_IDS = redis_db.R3DIS.smembers("id")
-    NODE_IDS.update(node_ids)
-    relationship_list = parser_utils.parse_relationships(query_relations)
-    target_nodes, source_nodes, relations = zip(*relationship_list)
-    rel_nodes = target_nodes + source_nodes
-    extra_nodes = [n for n in rel_nodes if n[1]["id"] not in NODE_IDS]
-    # for i in [relations, target_nodes, source_nodes, nodes_list]:
-    for i in [relations, extra_nodes, nodes_list]:
-        redis_db.add_entities(i)
+def eval_create(create_query):
+    created_graph = create_clause.create_handler(create_query)
+    if created_graph:
+        return created_graph
 
 
 def eval_set(set_query):
@@ -59,25 +51,16 @@ def eval_set(set_query):
 
 
 def eval_match(match_query):
-    re_where = re_utils.regex_where(match_query)
-    if re_where:
-        match_query, where_query = re_where
-
-    nodes, relations = re_utils.regex_entities(match_query)
-    match_nodes = parser_utils.parse_nodes(nodes)
-    if relations:
-        relations = parser_utils.parse_relationships(relations)
-    return match_clause.match_handler(match_nodes, re_where)
+    matched_graph = match_clause.match_handler(match_query)
+    return matched_graph
 
 
-def eval_return(return_query, return_input):
-    return_items = [dict([cond.split(".")]) for cond in return_query.split(",")]
-    final_return = [[return_input[k][v] for k, v in cond.items()] for cond in return_items]
-    print(final_return)
-    return final_return
+def eval_return(return_query, subgraph):
+    returned = return_clause.return_handler(return_query, subgraph)
+    return returned
 
 
-clauses_dict = {"CREATE": eval_create,
-                "SET": eval_set,
-                "MATCH": eval_match,
-                "RETURN": eval_return, }
+# clauses_dict = {"CREATE": eval_create,
+#                 "SET": eval_set,
+#                 "MATCH": eval_match,
+#                 "RETURN": eval_return, }

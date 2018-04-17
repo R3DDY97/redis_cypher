@@ -37,7 +37,7 @@ def parse_relation(relation):
 
     if reln_property:
         mapping.update(reln_property)
-    cypher_reln = ["relation:{}".format(reln_id), mapping]
+    cypher_reln = ["relation:{}".format(reln_id or reln_type), mapping]
     return cypher_reln
 
 
@@ -51,7 +51,7 @@ def parse_relationship(re_relationship):
         relation[1]["target_node"] = target_node
         relation[1]["source_node"] = source_node
     else:
-        relation[1]["source_node"] = target_node, source_node
+        relation[1]["conn_nodes"] = target_node, source_node
     relation[1]["directed"] = directed
     # return relation
     return target_node, source_node, relation
@@ -63,6 +63,33 @@ def parse_nodes(nodes):
 
 def parse_relationships(relationships):
     return [parse_relationship(relationship) for relationship in relationships]
+
+
+def parse_match(match_query):
+    nodes, relations = re_utils.regex_entities(match_query)
+    match_nodes = parse_nodes(nodes)
+    if relations:
+        relations = parse_relationships(relations)
+    return match_nodes, relations
+
+
+def parse_where(where_query):
+    where_conditions = [cond.split("=") for cond in where_query]
+    where_conditions = [i.split(".") + [j] for i, j in where_conditions]
+    parsed_WHERE = {parse_item(mid): {parse_item(mk): parse_item(mv)}
+                    for mid, mk, mv in where_conditions}
+    return parsed_WHERE
+
+
+def parse_return(return_query):
+    if "type" in return_query:
+        pass
+    parsed_RETURN = [[i.strip() for i in cond.split(".")] for cond in return_query.split(",")]
+    return parsed_RETURN
+
+
+def parse_set(set_query):
+    nodes, relations = re_utils.regex_entities(set_query)
 
 
 def parse_property(prty):
@@ -92,7 +119,3 @@ def parse_item(item):
     except ValueError:
         item = float(item)
     return item
-
-
-def parse_match(match_query):
-    pass

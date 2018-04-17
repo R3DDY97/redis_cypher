@@ -28,7 +28,17 @@ def delete_node(node_id):
 
 def add_relation(relation_data):
     reln_id, mapping = relation_data
-    R3DIS.hmset(name="relation:{}".format(reln_id), mapping=mapping)
+    R3DIS.lpush(reln_id, mapping)
+    if mapping["directed"]:
+        target_node = mapping["target_node"]
+        source_node = mapping["source_node"]
+        R3DIS.lpush("{}_neighbours".format(target_node), source_node)
+    else:
+        node1, node2 = mapping["conn_nodes"]
+        R3DIS.lpush("{}_neighbours".format(node1), node2)
+        R3DIS.lpush("{}_neighbours".format(node2), node1)
+
+    # R3DIS.lpush("relation:{}".format(reln_id), mapping)
     R3DIS.save()
 
 
@@ -48,7 +58,8 @@ def add_entity(entity_data):
 
 def add_entities(entity_list):
     if not entity_list:
-        print("Cant store empty entity list in DB ")
+        return
+        # print("Cant store empty entity list in DB ")
     for entity in entity_list:
         entity_id, mapping = entity
         R3DIS.hmset(name=entity_id, mapping=mapping)
@@ -57,12 +68,12 @@ def add_entities(entity_list):
             R3DIS.sadd("node_ids", mapping["id"])
             R3DIS.sadd("labels", mapping["label"])
             R3DIS.sadd(mapping["label"], mapping)
-            # R3DIS.set(mapping["id"], mapping)
+            # R3DIS.set("{}".format(mapping["id"]), mapping)
         else:
             R3DIS.sadd("relation_ids", mapping["id"])
             R3DIS.sadd("type", mapping["type"])
             R3DIS.sadd(mapping["type"], mapping)
-            # R3DIS.set(mapping["id"], mapping)
+            # R3DIS.set("r_{}".format(mapping["id"]), mapping)
     R3DIS.save()
 
 
@@ -91,14 +102,6 @@ def bytes2str(byte_group):
     return str_group
 
 
-def dict2hash():
-    pass
-
-
-def list2set():
-    pass
-
-
 def get_match(item):
     cursor, byte_nodes = R3DIS.scan(cursor=0, match="{}*".format(item))
     node_keys = bytes2str(byte_nodes)
@@ -106,11 +109,11 @@ def get_match(item):
     return nodes
 
 
-def update_node_adjacancy(node_data):
+def update_node_adj(node_data):
     pass
 
 
-def update_relation_adjcancy(relation_data):
+def update_relation_adj(relation_data):
     pass
 
 
