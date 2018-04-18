@@ -47,12 +47,18 @@ def regex_property(entity):
     ''''regex to fetch property from entities '''
     re_dict = re.search(r"{.*?}", entity)
     if re_dict:
-        entity_id, entity_property = entity[:re_dict.start()], re_dict.group()
+        entity_id, entity_property = entity[:re_dict.start()].strip(), re_dict.group()
         return entity_id, entity_property
     return None
 
 
 def regex_return(return_query):
     '''searches cypher query and returns (tuple clause, sub_query) list'''
-    re_subclause = re.findall(r"SORT|ASC|DES|AS|type\(.*?\)", return_query)
-    re_subquery = re.split(r"SORT|ASC|DES|AS|type\(.*?\)", return_query)
+    re_str = r"AS|ORDER BY|SKIP|LIMIT|type\(.*?\)"
+    re_subclause = re.findall(re_str, return_query)
+    if re_subclause:
+        re_subquery = re.split(re_str, return_query)
+        re_subclause = ["RETURN"] + re_subclause
+        subclause_list = {c: q for c, q in zip(re_subclause, re_subquery)}
+        return subclause_list
+    return None

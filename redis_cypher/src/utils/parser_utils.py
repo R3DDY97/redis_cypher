@@ -81,11 +81,27 @@ def parse_where(where_query):
     return parsed_WHERE
 
 
-def parse_return(return_query):
-    if "type" in return_query:
-        pass
-    parsed_RETURN = [[i.strip() for i in cond.split(".")] for cond in return_query.split(",")]
-    return parsed_RETURN
+def parse_return(re_return):
+    if "type" in re_return:
+        re_return["type"] = re_return["type"][1:-1]
+    if "ORDER BY" in re_return:
+        return_order = re_return["ORDER BY"]
+    if "SKIP" in re_return:
+        return_skip = re_return["SKIP"].strip()
+        try:
+            re_return["SKIP"] = int(return_skip)
+        except ValueError:
+            pass
+    if "LIMIT" in re_return:
+        return_limit = re_return["LIMIT"]
+        try:
+            re_return["LIMIT"] = int(return_limit)
+        except ValueError:
+            pass
+
+    re_return["RETURN"] = [[i.strip() for i in cond.split(".")]
+                           for cond in re_return["RETURN"].split(",")]
+    return re_return
 
 
 def parse_set(set_query):

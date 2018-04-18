@@ -32,11 +32,11 @@ def add_relation(relation_data):
     if mapping["directed"]:
         target_node = mapping["target_node"]
         source_node = mapping["source_node"]
-        R3DIS.lpush("{}_neighbours".format(target_node), source_node)
+        R3DIS.lpush("{}:neighbours".format(target_node[0]), source_node)
     else:
         node1, node2 = mapping["conn_nodes"]
-        R3DIS.lpush("{}_neighbours".format(node1), node2)
-        R3DIS.lpush("{}_neighbours".format(node2), node1)
+        R3DIS.lpush("{}:neighbours".format(node1[0]), node2)
+        R3DIS.lpush("{}:neighbours".format(node2[0]), node1)
 
     # R3DIS.lpush("relation:{}".format(reln_id), mapping)
     R3DIS.save()
