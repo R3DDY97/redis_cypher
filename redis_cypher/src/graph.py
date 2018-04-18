@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """evaluates and executes cypher query commands."""
 
-import clause_utils
+from utils import clause_utils
 
 
 class Graph():
